@@ -7,11 +7,13 @@ export enum Screen {
   Map, Location
 }
 
+
 type Props = {
   screen: Screen
   onChange: (s: Screen) => void
   location: PointOfInterest | null
 }
+
 
 export const Navbar: FunctionalComponent<Props> =
   ({screen, onChange, location}) =>
