@@ -1,12 +1,13 @@
 import {h, FunctionalComponent} from "preact"
 import cls from "classnames"
 
-import {PointOfInterest} from "./types"
+import {Probe} from "./types"
+
 
 type Props = {
-  probes: string[]
-  currentProbe: string
-  onSetCurrentProbe: (p: string) => void
+  probes: Probe[],
+  currentProbe: Probe,
+  onSetCurrentProbe: (p: Probe) => void
 }
 
 
@@ -21,7 +22,7 @@ export const ListOfProps: FunctionalComponent<Props> = (props) => {
           onClick={() => onSetCurrentProbe(p)}
         >
           <span class="panel-icon">
-            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+            <i class={`fas fa-${p.icon}`} aria-hidden="true"></i>
           </span>
           {p.title}
         </a>
