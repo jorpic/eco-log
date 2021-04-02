@@ -1,5 +1,6 @@
 
 import {h, FunctionalComponent, Fragment} from "preact"
+import {useState} from "preact/hooks"
 import cls from "classnames"
 
 import {PointOfInterest} from "./types"
@@ -17,7 +18,6 @@ const locations = [
   {title: "Зимовка", position: {lat: 60.5633273, lng: 50.5677878}},
 ];
 
-const center = {lat: 60.7400703, lng: 49.5576848};
 
 
 type Props = {
@@ -31,13 +31,23 @@ export const MapScreen: FunctionalComponent<Props> = (props) =>
 {
   const {selectedLocation} = props;
   const {onSelectLocation, onGoToLocationScreen} = props;
+
+  const [center, setCenter] = useState({lat: 60.7400703, lng: 49.5576848});
+  const [zoom, setZoom] = useState(8);
+
+  const zoomToNewLocation = (l: PointOfInterest) => {
+    setZoom(10);
+    setCenter(l.position);
+    onSelectLocation(l);
+  }
+
   return (
     <div class="columns is-fullheight">
       <Map
         class="column is-two-thirds"
         apiKey={API_KEY}
         center={center}
-        zoom={8}
+        zoom={zoom}
         locations={locations}
         selectedLocation={selectedLocation}
         onSelectLocation={onSelectLocation}
@@ -46,7 +56,7 @@ export const MapScreen: FunctionalComponent<Props> = (props) =>
         <ListOfLocations
           locations={locations}
           selectedLocation={selectedLocation}
-          onSelectLocation={onSelectLocation}
+          onSelectLocation={zoomToNewLocation}
           onGoToLocationScreen={onGoToLocationScreen}
         />
       </div>

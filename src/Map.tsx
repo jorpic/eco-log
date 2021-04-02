@@ -1,6 +1,7 @@
 
 import "regenerator-runtime/runtime" // FIXME: babelrc?
-import {h, Component, createRef} from "preact"
+import {h, FunctionalComponent, createRef} from "preact"
+import {useState, useEffect} from "preact/hooks"
 import {Loader} from "@googlemaps/js-api-loader"
 import {PointOfInterest} from "./types"
 
@@ -18,28 +19,28 @@ type Props = {
 
 
 
-export class Map extends Component<Props> {
-  mapRef = createRef();
+export const Map: FunctionalComponent<Props> = (props) => {
+  const {locations, selectedLocation, onSelectLocation} = props;
+  const mapRef = createRef();
+  const [map, setMap] = useState<google.maps.Map | null>(null);
 
-  constructor() {
-    super();
-    this.state = {map: null};
-  }
-
-  async componentDidMount() {
-    const {apiKey, center, zoom} = this.props;
+  async function componentDidMount() {
+    const {apiKey, center, zoom} = props;
     const loader = new Loader({apiKey, version: "weekly"});
     await loader.load();
-    const map = new google.maps.Map(
-      this.mapRef.current,
+
+    setMap(new google.maps.Map(
+      mapRef.current,
       {center, zoom, mapTypeId: "satellite"}
-    );
-    this.setState({map});
-    this.setMarkers(map);
+    ));
   }
 
-  setMarkers(map: google.maps.Map) {
-    const {locations, selectedLocation, onSelectLocation} = this.props;
+  useEffect(() => {componentDidMount()}, []);
+
+  const [markers, setMarkers] = useState([]);
+
+  function createMarkers() {
+    if (!map) return;
     const placesWithMarkers = locations.map((p: PointOfInterest) => {
       const {position, title} = p;
       const m = new google.maps.Marker(
@@ -50,20 +51,27 @@ export class Map extends Component<Props> {
             : null
         });
 
-      m.addListener("click", () => {
-        onSelectLocation(p);
-        placesWithMarkers.forEach(({marker, place}) =>
-          marker.setAnimation(place == p
-            ? google.maps.Animation.BOUNCE
-            : null)
-        )
-      });
-
+      m.addListener("click", () => {onSelectLocation(p)});
       return {place: p, marker: m};
     });
+    setMarkers(placesWithMarkers);
   }
 
-  render() {
-    return <div class={this.props.class} ref={this.mapRef}></div>;
+  useEffect(createMarkers, [map]);
+
+  function toggleBounce() {
+    markers.forEach(({marker, place}) =>
+      marker.setAnimation(place == selectedLocation
+        ? google.maps.Animation.BOUNCE
+        : null)
+    )
   }
+
+  useEffect(toggleBounce, [selectedLocation]);
+
+  const {zoom, center} = props;
+  useEffect(() => map && map.setZoom(zoom), [zoom]);
+  useEffect(() => map && map.panTo(center), [center]);
+
+  return <div class={props.class} ref={mapRef}></div>;
 }
