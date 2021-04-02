@@ -9,6 +9,8 @@ import {PointOfInterest} from "./types"
 type Props = {
   class: string
   apiKey: string
+  center: {lat: number, lng: number}
+  zoom: number
   locations: PointOfInterest[]
   selectedLocation: PointOfInterest | null
   onSelectLocation: (l: PointOfInterest) => void
@@ -25,16 +27,13 @@ export class Map extends Component<Props> {
   }
 
   async componentDidMount() {
-    const {apiKey} = this.props;
+    const {apiKey, center, zoom} = this.props;
     const loader = new Loader({apiKey, version: "weekly"});
     await loader.load();
     const map = new google.maps.Map(
       this.mapRef.current,
-      { center: { lat: -34.397, lng: 150.644 },
-        zoom: 8,
-        mapTypeId: "satellite"
-
-      });
+      {center, zoom, mapTypeId: "satellite"}
+    );
     this.setState({map});
     this.setMarkers(map);
   }
